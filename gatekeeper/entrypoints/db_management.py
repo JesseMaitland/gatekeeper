@@ -28,8 +28,10 @@ class AuditUsers(EntryPoint):
         super(AuditUsers, self).__init__(config_path)
         self.pc = ProjectContext()
         self.je = self.pc.get_jinja_env()
-        self.dbc: DbCatalog = introspect_redshift(self.rsterm.get_db_connection('redscope'), verbose=True)
 
+        db_connection = self.rsterm.get_db_connection('redscope')
+        self.dbc: DbCatalog = introspect_redshift(db_connection, verbose=True)
+        db_connection.close()
 
     def run(self) -> None:
 
@@ -39,16 +41,7 @@ class AuditUsers(EntryPoint):
             self.print_table(user_mappings)
 
         if self.cmd_args.create_migration:
-            self.match_invalid_users_group_membership(user_mappings)
-
-
-
-        """
-        find all users which are not valid.
-        match not valid users membership objects.
-        pass result to template
-        save file generated
-        """
+            self.create_drop_user_migration(user_mappings)
 
     def get_user_mapping(self) -> List[List[str]]:
         redshift_users = [u.name for u in self.dbc.users]
@@ -77,14 +70,14 @@ class AuditUsers(EntryPoint):
         print(table)
         exit()
 
-    def match_invalid_users_group_membership(self, user_mappings: List):
+    def create_drop_user_migration(self, user_mappings: List):
         invalid_user_names = [x[0] or x[1] for x in user_mappings if not x[2]]
         invalid_users = []
-        print(invalid_user_names)
+
         for m in self.dbc.membership:
             if m.name in invalid_user_names:
                 invalid_users.append(m)
-        print(invalid_users)
+
         template = self.je.get_template('drop.sql')
         file = self.pc.dirs.get('migrations') / self.pc.get_permission_diff_file_name()
         content = template.render(invalid_users=invalid_users, dt=datetime.now().replace(microsecond=0))

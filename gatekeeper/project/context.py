@@ -39,6 +39,8 @@ class ProjectContext:
         configs = root / "configs"
         ddl = root / "ddl"
         migrations = root / "migrations"
+        ownership = root / "ownership"
+
         users = ddl / "users"
         groups = ddl / "groups"
 
@@ -48,7 +50,8 @@ class ProjectContext:
             'ddl': ddl,
             'users': users,
             'groups': groups,
-            'migrations': migrations
+            'migrations': migrations,
+            'ownership': ownership
         }
 
         self.config_files = {

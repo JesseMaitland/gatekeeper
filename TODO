@@ -1,0 +1,8 @@
+
+-- GATEKEEPER
+add schema ownership validation to check that a schema has not been assigned ownership
+to more than one user.
+
+
+-- REDSCOPE
+add user ownership grouping to DbCatalog object

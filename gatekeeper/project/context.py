@@ -40,9 +40,13 @@ class ProjectContext:
         ddl = root / "ddl"
         migrations = root / "migrations"
         ownership = root / "ownership"
+        audits = root / "audits"
 
         users = ddl / "users"
         groups = ddl / "groups"
+
+        ownership_audit = audits / "ownership"
+        user_audit = audits / "users"
 
         self.dirs = {
             'root': root,
@@ -51,7 +55,10 @@ class ProjectContext:
             'users': users,
             'groups': groups,
             'migrations': migrations,
-            'ownership': ownership
+            'ownership': ownership,
+            'audits': audits,
+            'user_audit': user_audit,
+            'ownership_audit': ownership_audit
         }
 
         self.config_files = {
@@ -86,8 +93,15 @@ class ProjectContext:
         return GateKeeper(**config)
 
     @staticmethod
-    def get_permission_diff_file_name() -> str:
-        return f"perm-{str(int(datetime.now().timestamp()))}.sql"
+    def get_audit_file_name(prefix: str = None, post_fix: str = None) -> str:
+        if not prefix and not post_fix:
+            return f"{str(int(datetime.now().timestamp()))}.sql"
+
+        if prefix and not post_fix:
+            return f"{prefix}-{str(int(datetime.now().timestamp()))}.sql"
+
+        if prefix and post_fix:
+            return f"{prefix}-{str(int(datetime.now().timestamp()))}-{post_fix}.sql"
 
 
 def provide_project_context(func):

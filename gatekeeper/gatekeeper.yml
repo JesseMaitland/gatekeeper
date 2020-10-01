@@ -42,3 +42,5 @@ rsterm:
       - config
       - ddl
       - users
+      - code
+      - ownership

@@ -1,10 +1,16 @@
+# standard lib
 from datetime import datetime
 from typing import List
+
+# 3rd party deps
 from rsterm import EntryPoint
 from prettytable import PrettyTable
 from redscope.api import introspect_redshift
 from redscope.schema_introspection.db_objects import DbCatalog
+
+# project deps
 from gatekeeper.project import ProjectContext
+from gatekeeper.tools import group_ownership
 
 
 class AuditUsers(EntryPoint):
@@ -79,6 +85,34 @@ class AuditUsers(EntryPoint):
                 invalid_users.append(m)
 
         template = self.je.get_template('drop.sql')
-        file = self.pc.dirs.get('migrations') / self.pc.get_permission_diff_file_name()
+        self.pc.clean_dir('user_audit')
+        file = self.pc.dirs.get('user_audit') / self.pc.get_audit_file_name('users', 'audit')
         content = template.render(invalid_users=invalid_users, dt=datetime.now().replace(microsecond=0))
         file.write_text(content)
+
+
+class AuditOwnership(EntryPoint):
+
+    def __init__(self, config_path):
+        self.pc = ProjectContext()
+        self.je = self.pc.get_jinja_env()
+        self.co = self.pc.get_config()
+        super(AuditOwnership, self).__init__(config_path)
+        db_connection = self.rsterm.get_db_connection('redscope')
+        self.dbc = introspect_redshift(db_connection, 'ownership', verbose=True)
+        db_connection.close()
+
+    def run(self) -> None:
+
+        self.pc.clean_dir('ownership_audit')
+        p_dir = self.pc.dirs['ownership_audit']
+        template = self.je.get_template('ownership_audit.sql')
+        ownership = group_ownership(self.dbc)
+        dt = datetime.now().replace(microsecond=0)
+
+        for user, db_objects in ownership.items():
+            content = template.render(**{'user': user, 'db_objects': db_objects, 'dt': dt})
+            file_name = self.pc.get_audit_file_name(user, 'audit')
+            fp = p_dir / file_name
+            fp.touch()
+            fp.write_text(content)

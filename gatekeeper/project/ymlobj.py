@@ -35,12 +35,11 @@ class User(yaml.YAMLObject):
 
     yaml_tag = '!User'
 
-    def __init__(self, name: str, password: str, roles: List[str], is_system_user: bool = False, owns_schemas: List[str] = None) -> None:
+    def __init__(self, name: str, roles: List[str], is_admin: bool = False, owns_schemas: List[str] = None) -> None:
         self.name = name
-        self.password = password
         self.roles = roles
         self._roles = {}
-        self.is_system_user = is_system_user
+        self.is_admin = is_admin
         self.owns_schemas = owns_schemas or []
 
     def set_roles(self, roles: Dict[str, Role]) -> None:

@@ -1,12 +1,8 @@
-from rsterm import run_entry_point
-from pathlib import Path
+from rambo import run_entrypoint
 
 
 def main():
-    try:
-        run_entry_point(Path(__file__).absolute().parent / f"gatekeeper.yml")
-    except FileNotFoundError:
-        run_entry_point()
+    run_entrypoint('gatekeeper')
 
 
 if __name__ == '__main__':

@@ -1,10 +1,10 @@
 import shutil
 import yaml
-from datetime import datetime
 from pathlib import Path
 from typing import Dict, List
+from configparser import ConfigParser
+from dotenv import load_dotenv
 from jinja2 import PackageLoader, Environment
-
 from .ymlobj import User, Role, Group
 
 
@@ -18,56 +18,41 @@ class GateKeeper:
         for user in users.values():
             user.set_roles(roles)
 
-        self.items = {
+        self.access_configs = {
             'users': users,
             'roles': roles,
             'groups': groups
         }
 
     def get_user(self, name: str) -> User:
-        return self.items['users'][name]
+        return self.access['users'][name]
 
     def get_users(self) -> List[User]:
-        return list(self.items['users'].values())
+        return list(self.access['users'].values())
 
 
-class ProjectContext:
+class GateKeeperProject:
+
+    gatekeeper_config_file = Path.cwd().absolute() / '.gatekeeper'
 
     def __init__(self):
 
-        root = Path.cwd().absolute() / "gate-keeper"
-        configs = root / "configs"
-        ddl = root / "ddl"
-        migrations = root / "migrations"
-        ownership = root / "ownership"
-        audits = root / "audits"
-
-        users = ddl / "users"
-        groups = ddl / "groups"
-
-        ownership_audit = audits / "ownership"
-        user_audit = audits / "users"
+        self.root = Path.cwd().absolute() / "redshift" / "gatekeeper"
 
         self.dirs = {
-            'root': root,
-            'configs': configs,
-            'ddl': ddl,
-            'users': users,
-            'groups': groups,
-            'migrations': migrations,
-            'ownership': ownership,
-            'audits': audits,
-            'user_audit': user_audit,
-            'ownership_audit': ownership_audit
+            'configs': self.root / 'configs',
+            'rendered': self.root / 'rendered'
         }
 
         self.config_files = {
-            'groups': configs / 'groups.yml',
-            'users': configs / 'users.yml',
-            'roles': configs / 'roles.yml'
+            'groups': self.dirs['configs'] / 'groups.yml',
+            'users': self.dirs['configs'] / 'users.yml',
+            'roles': self.dirs['configs'] / 'roles.yml'
         }
 
     def init(self):
+        self.root.mkdir(exist_ok=True, parents=True)
+        self.gatekeeper_config_file.touch(exist_ok=True)
 
         for v in self.dirs.values():
             v.mkdir(exist_ok=True, parents=True)
@@ -80,32 +65,26 @@ class ProjectContext:
         shutil.rmtree(d)
         d.mkdir(exist_ok=True, parents=True)
 
-    @staticmethod
-    def get_jinja_env() -> Environment:
-        loader = PackageLoader(package_name='gatekeeper', package_path='templates')
-        return Environment(loader=loader, trim_blocks=True, lstrip_blocks=True)
-
-    def get_config(self) -> GateKeeper:
+    def get_gatekeeper(self) -> GateKeeper:
         config = {}
         for config_name, config_path in self.config_files.items():
             c = yaml.load_all(config_path.open(), Loader=yaml.FullLoader)
             config[config_name] = {i.name: i for i in c}
         return GateKeeper(**config)
 
+
+class GateKeeperEnvironment:
+
+    def __init__(self):
+        self.config = ConfigParser()
+        self.config.read(GateKeeperProject.gatekeeper_config_file.open())
+
+        try:
+            load_dotenv(self.config['env']['file'])
+        except KeyError:
+            load_dotenv()
+
     @staticmethod
-    def get_audit_file_name(prefix: str = None, post_fix: str = None) -> str:
-        if not prefix and not post_fix:
-            return f"{str(int(datetime.now().timestamp()))}.sql"
-
-        if prefix and not post_fix:
-            return f"{prefix}-{str(int(datetime.now().timestamp()))}.sql"
-
-        if prefix and post_fix:
-            return f"{prefix}-{str(int(datetime.now().timestamp()))}-{post_fix}.sql"
-
-
-def provide_project_context(func):
-    def wrapper(*args, **kwargs):
-        pc = ProjectContext()
-        return func(pc=pc, *args, **kwargs)
-    return wrapper
+    def get_jinja_env() -> Environment:
+        loader = PackageLoader(package_name='gatekeeper', package_path='templates')
+        return Environment(loader=loader, trim_blocks=True, lstrip_blocks=True)

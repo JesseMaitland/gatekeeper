@@ -2,6 +2,7 @@ import os
 import shutil
 import yaml
 import psycopg2
+from hashlib import sha1
 from psycopg2.extensions import connection
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -44,7 +45,9 @@ class GateKeeperProject:
 
         self.dirs = {
             'configs': self.root / 'configs',
-            'rendered': self.root / 'rendered'
+            'rendered': self.root / 'rendered',
+            'object_store': self.root / '.gk1',
+            'objects': self.root / '.gk1' / 'objects'
         }
 
         self.config_files = {
@@ -74,6 +77,21 @@ class GateKeeperProject:
             c = yaml.load_all(config_path.open(), Loader=yaml.FullLoader)
             config[config_name] = {i.name: i for i in c}
         return GateKeeper(**config)
+
+    def hash_file(self, file: os.DirEntry) -> str:
+        with open(file.path) as data:
+            obj_type = 'file'
+            sha_hash = sha1(data.read()).digest()
+
+    def hash_files(self) -> str:
+        object_dir = self.dirs.get('objects')
+        with os.scandir(self.dirs.get('rendered')) as it:
+
+            for entry in it:
+
+
+    def update_head(self, oid: str) -> None:
+        pass
 
 
 class GateKeeperEnvironment:

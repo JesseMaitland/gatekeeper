@@ -132,7 +132,6 @@ class Render(GateKeeperSingleActionEntryPoint):
         jinja = self.environment.get_jinja_env()
         gatekeeper = self.project.get_gatekeeper()
         rendered_dir = self.project.dirs.get('rendered')
-        now = datetime.now().replace(microsecond=0)
 
         for access_config_key, access_configs in gatekeeper.access_configs.items():
 
@@ -144,6 +143,8 @@ class Render(GateKeeperSingleActionEntryPoint):
 
             for access_name, access_value in access_configs.items():
                 rendered_file_path = rendered_path / f"{access_name}.sql"
-                content = template.render(**{access_config_key.rstrip('s'): access_value, 'dt': now})
+                content = template.render(**{access_config_key.rstrip('s'): access_value})
                 rendered_file_path.parent.mkdir(exist_ok=True, parents=True)
                 rendered_file_path.write_text(content)
+
+        print(f"permissions files rendered under {rendered_dir.absolute().as_posix()}")

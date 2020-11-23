@@ -1,7 +1,10 @@
+import os
 import shutil
 import yaml
+import psycopg2
+from psycopg2.extensions import connection
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from configparser import ConfigParser
 from dotenv import load_dotenv
 from jinja2 import PackageLoader, Environment
@@ -25,10 +28,10 @@ class GateKeeper:
         }
 
     def get_user(self, name: str) -> User:
-        return self.access['users'][name]
+        return self.access_configs['users'][name]
 
     def get_users(self) -> List[User]:
-        return list(self.access['users'].values())
+        return list(self.access_configs['users'].values())
 
 
 class GateKeeperProject:
@@ -77,7 +80,7 @@ class GateKeeperEnvironment:
 
     def __init__(self):
         self.config = ConfigParser()
-        self.config.read(GateKeeperProject.gatekeeper_config_file.open())
+        self.config.read(GateKeeperProject.gatekeeper_config_file)
 
         try:
             load_dotenv(self.config['env']['file'])
@@ -88,3 +91,24 @@ class GateKeeperEnvironment:
     def get_jinja_env() -> Environment:
         loader = PackageLoader(package_name='gatekeeper', package_path='templates')
         return Environment(loader=loader, trim_blocks=True, lstrip_blocks=True)
+
+    def redshift_connection(self) -> connection:
+        connection_string = self.config['redshift']['connection']
+        connection_string = os.getenv(connection_string, connection_string)
+        return psycopg2.connect(connection_string)
+
+    def execute_query(self, query: str, params: List = None, fetch: bool = True) -> Tuple:
+        with self.redshift_connection() as conn:
+            with conn.cursor() as cursor:
+                result = None
+
+                if params:
+                    cursor.execute(query, params)
+                else:
+                    cursor.execute(query)
+
+                if fetch:
+                    result = cursor.fetchall()
+
+                conn.commit()
+                return result

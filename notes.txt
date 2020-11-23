@@ -1,0 +1,6 @@
+
+
+workflow
+	render -> generates the sql files from configs
+	stage  -> compares files to what is in the object db
+	commit -> deploy the changes to redshift

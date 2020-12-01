@@ -1,8 +1,9 @@
-from rambo import run_entrypoint
+from gatekeeper.cli import parse_args
 
 
 def main():
-    run_entrypoint('gatekeeper')
+    cmd = parse_args()
+    cmd.func(cmd)
 
 
 if __name__ == '__main__':

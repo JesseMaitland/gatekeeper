@@ -1,5 +1,6 @@
 import yaml
 from typing import List, Dict
+from pathlib import Path
 
 
 class Group(yaml.YAMLObject):
@@ -62,3 +63,31 @@ class User(yaml.YAMLObject):
     @property
     def owned_schemas(self) -> List[str]:
         return self.owns_schemas
+
+
+class ConfigMapping:
+
+    def __init__(self, users: Dict[str, User], roles: Dict[str, Role], groups: Dict[str, Group]) -> None:
+
+        for role in roles.values():
+            role.set_groups(groups)
+
+        for user in users.values():
+            user.set_roles(roles)
+
+        self.objects = {
+            'users': users,
+            'roles': roles,
+            'groups': groups
+        }
+
+    def to_render(self) -> Dict:
+        return {key: value for key, value in self.objects.items() if key in ['users', 'groups']}
+
+    @classmethod
+    def from_config_paths(cls, config_paths: Dict[str, Path]) -> 'ConfigMapping':
+        config = {}
+        for config_name, config_path in config_paths.items():
+            c = yaml.load_all(config_path.open(), Loader=yaml.FullLoader)
+            config[config_name] = {i.name: i for i in c}
+        return cls(**config)

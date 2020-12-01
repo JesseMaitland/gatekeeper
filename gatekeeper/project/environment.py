@@ -5,7 +5,7 @@ from configparser import ConfigParser
 from dotenv import load_dotenv
 from jinja2 import PackageLoader, Environment
 
-from gatekeeper.project.config import GATEKEEPER_CONFIG_PATH
+from gatekeeper.project.gatekeeper_config import GATEKEEPER_CONFIG_PATH
 
 
 def get_jinja_environment() -> Environment:
@@ -13,20 +13,26 @@ def get_jinja_environment() -> Environment:
     return Environment(loader=loader, trim_blocks=True, lstrip_blocks=True)
 
 
-class GateKeeperEnvironment:
+def get_gatekeeper_config() -> ConfigParser:
+    config = ConfigParser()
+    config.read(GATEKEEPER_CONFIG_PATH.open())
+    return config
 
-    def __init__(self):
-        self.config = ConfigParser()
-        self.config.read(GATEKEEPER_CONFIG_PATH.open())
 
-        try:
-            load_dotenv(self.config['env']['file'])
-        except KeyError:
-            load_dotenv()
+def load_gatekeeper_env() -> None:
+    config = get_gatekeeper_config()
+    try:
+        load_dotenv(config['env']['file'])
+    except KeyError:
+        load_dotenv()
 
-    def get_redshift_connection(self) -> connection:
-        connection_string = self.config['redshift']['connection']
-        connection_string = os.getenv(connection_string, connection_string)
-        return psycopg2.connect(connection_string)
+
+def get_redshift_connection() -> connection:
+    config = get_gatekeeper_config()
+    connection_string = config['redshift']['connection']
+    connection_string = os.getenv(connection_string, connection_string)
+    return psycopg2.connect(connection_string)
+
+
 
 

@@ -1,10 +1,10 @@
 import shutil
 from argparse import Namespace
-from gatekeeper.project.config import (
+from gatekeeper.project.gatekeeper_config import (
     PROJECT_CONFIG_FILE_PATHS,
     PROJECT_DIRECTORY_PATHS
 )
-from gatekeeper.project.project_configs import ConfigMapping
+from gatekeeper.project.project_config import ConfigMapping
 from gatekeeper.project.environment import get_jinja_environment
 
 

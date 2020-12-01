@@ -3,6 +3,8 @@ from argparse import ArgumentParser
 from .init import init
 from .render import render
 from .digest import digest
+from .fetch import fetch
+from .stage import stage
 
 def parse_args():
 
@@ -18,5 +20,13 @@ def parse_args():
 
     digest_parser = sub_parsers.add_parser('digest')
     digest_parser.set_defaults(func=digest)
+
+    fetch_parser = sub_parsers.add_parser('fetch')
+    fetch_parser.add_argument('name')
+    fetch_parser.add_argument('type_')
+    fetch_parser.set_defaults(func=fetch)
+
+    staging_parser = sub_parsers.add_parser('stage')
+    staging_parser.set_defaults(func=stage)
 
     return parser.parse_args()

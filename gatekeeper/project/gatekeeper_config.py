@@ -6,6 +6,7 @@ PROJECT_ROOT = Path.cwd().absolute() / "redshift" / "gatekeeper"
 
 OBJECT_STORE_ROOT = PROJECT_ROOT / '.gk'
 
+STAGING_FILE_PATH = PROJECT_ROOT / 'staged.sql'
 
 PROJECT_DIRECTORY_PATHS = {
     'configs': PROJECT_ROOT / 'configs',

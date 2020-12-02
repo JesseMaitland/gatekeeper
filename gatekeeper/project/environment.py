@@ -15,12 +15,13 @@ def get_jinja_environment() -> Environment:
 
 def get_gatekeeper_config() -> ConfigParser:
     config = ConfigParser()
-    config.read(GATEKEEPER_CONFIG_PATH.open())
+    config.read(GATEKEEPER_CONFIG_PATH)
     return config
 
 
-def load_gatekeeper_env() -> None:
-    config = get_gatekeeper_config()
+def load_gatekeeper_env(config: ConfigParser = None) -> None:
+    if not config:
+        config = get_gatekeeper_config()
     try:
         load_dotenv(config['env']['file'])
     except KeyError:
@@ -29,8 +30,8 @@ def load_gatekeeper_env() -> None:
 
 def get_redshift_connection() -> connection:
     config = get_gatekeeper_config()
-    connection_string = config['redshift']['connection']
-    connection_string = os.getenv(connection_string, connection_string)
+    var_name = config['redshift']['connection']
+    connection_string = os.getenv(var_name)
     return psycopg2.connect(connection_string)
 
 

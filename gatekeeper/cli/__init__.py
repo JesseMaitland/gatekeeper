@@ -5,6 +5,8 @@ from .render import render
 from .digest import digest
 from .fetch import fetch
 from .stage import stage
+from .query import query
+
 
 def parse_args():
 
@@ -28,5 +30,9 @@ def parse_args():
 
     staging_parser = sub_parsers.add_parser('stage')
     staging_parser.set_defaults(func=stage)
+
+    query_parser = sub_parsers.add_parser('query')
+    query_parser.add_argument('query')
+    query_parser.set_defaults(func=query)
 
     return parser.parse_args()

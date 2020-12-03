@@ -1,12 +1,39 @@
 from hashlib import sha1
 from pathlib import Path
 from typing import Generator, Dict
-from gatekeeper.project.gatekeeper_config import (
-    STAGING_FILE_PATH,
-    OBJECT_STORE_PATHS,
-    PROJECT_DIRECTORY_PATHS
-)
 
+# Path to the cli environment config file
+GATEKEEPER_CONFIG_PATH = Path.cwd().absolute() / '.gatekeeper'
+
+# project root. this is where all of the gatekeeper output lives
+PROJECT_ROOT = Path.cwd().absolute() / "redshift" / "gatekeeper"
+
+# this file is rebuilt each time the stage command is run
+STAGING_FILE_PATH = PROJECT_ROOT / 'staged.sql'
+
+# root for the object store, where the state of the project is stored
+OBJECT_STORE_ROOT = PROJECT_ROOT / '.gk'
+
+# paths to be object store allow reference by name
+OBJECT_STORE_PATHS = {
+    'users': OBJECT_STORE_ROOT / 'users',
+    'groups': OBJECT_STORE_ROOT / 'groups'
+}
+
+# mapping of project directories to be referenced by name
+PROJECT_DIRECTORY_PATHS = {
+    'configs': PROJECT_ROOT / 'configs',
+    'rendered': PROJECT_ROOT / 'rendered'
+}
+
+# mapping of all the yaml config files used by gatekeeper to render sql templates
+PROJECT_CONFIG_FILE_PATHS = {
+    'groups': PROJECT_DIRECTORY_PATHS['configs'] / 'groups.yml',
+    'users': PROJECT_DIRECTORY_PATHS['configs'] / 'users.yml',
+    'roles': PROJECT_DIRECTORY_PATHS['configs'] / 'roles.yml'
+}
+
+# allowable types used by rendering functions
 TYPES = ['users', 'groups']
 
 
@@ -60,6 +87,10 @@ def fetch_from_rendered(name: str, type_: str):
                 return p
     else:
         raise FileNotFoundError(f"no rendered file found with type {type_} and name {name} in the rendered store")
+
+
+def get_config_path(name: str) -> Path:
+    return PROJECT_CONFIG_FILE_PATHS[name]
 
 
 #########################################################

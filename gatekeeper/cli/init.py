@@ -1,5 +1,5 @@
 from argparse import Namespace
-from gatekeeper.project.gatekeeper_config import (
+from gatekeeper.project.file_manager import (
     GATEKEEPER_CONFIG_PATH,
     PROJECT_DIRECTORY_PATHS,
     PROJECT_CONFIG_FILE_PATHS,

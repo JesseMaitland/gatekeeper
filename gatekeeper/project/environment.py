@@ -5,7 +5,7 @@ from configparser import ConfigParser
 from dotenv import load_dotenv
 from jinja2 import PackageLoader, Environment
 
-from gatekeeper.project.gatekeeper_config import GATEKEEPER_CONFIG_PATH
+from gatekeeper.project.file_manager import GATEKEEPER_CONFIG_PATH
 
 
 def get_jinja_environment() -> Environment:

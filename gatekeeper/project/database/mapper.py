@@ -1,5 +1,5 @@
 from typing import List, Tuple, Type
-from .models import (
+from gatekeeper.project.models import (
     Model, User, Table
 )
 

@@ -1,18 +1,24 @@
 from argparse import ArgumentParser
 
 from .init import init
-from .render import render
+# from .render import render
 from .digest import digest
 from .fetch import fetch
 from .stage import stage
 from .query import query
+from .cat import cat
+
+def render():
+    print("is now placeholder")
 
 
 def parse_args():
-
     parser = ArgumentParser()
     sub_parsers = parser.add_subparsers(dest='command')
     sub_parsers.required = True
+
+    cat_parser = sub_parsers.add_parser('cat')
+    cat_parser.set_defaults(func=cat)
 
     init_parser = sub_parsers.add_parser('init')
     init_parser.set_defaults(func=init)
@@ -34,5 +40,7 @@ def parse_args():
     query_parser = sub_parsers.add_parser('query')
     query_parser.add_argument('query')
     query_parser.set_defaults(func=query)
+
+
 
     return parser.parse_args()

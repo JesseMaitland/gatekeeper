@@ -1,4 +1,4 @@
 
 
-def format_model_name(query_name: str) -> str:
-    return query_name.rstrip('s').capitalize()
+def format_model_name(name: str) -> str:
+    return name.rstrip('s').capitalize()

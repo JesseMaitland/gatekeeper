@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 
 class Model:
@@ -7,7 +7,7 @@ class Model:
 
 class Group(Model):
 
-    #TODO: actually create the group implementation
+    # TODO: actually create the group implementation
     def __init__(self, **kwargs) -> None:
         self.kwargs = kwargs
 
@@ -45,6 +45,45 @@ class User(Model):
     @property
     def roles(self) -> Dict[str, Role]:
         return self._roles
+
+
+class GateKeeper:
+
+    def __init__(self, users: Dict[str, User], roles: Dict[str, Role], groups: Dict[str, Group]) -> None:
+        self._users = users
+        self._roles = roles
+        self._groups = groups
+
+    @property
+    def users(self) -> Dict[str, User]:
+        return self._users
+
+    @property
+    def roles(self) -> Dict[str, Role]:
+        return self._roles
+
+    @property
+    def groups(self) -> Dict[str, Group]:
+        return self._groups
+
+    def get_users(self, *names) -> Dict[str, User]:
+        return {name: self._users[name] for name in names if name in self._users.keys()}
+
+    def get_roles(self, *roles) -> Dict[str, Role]:
+        return {role: self._roles[role] for role in roles if role in self._roles.keys()}
+
+    def get_groups(self, *groups) -> Dict[str, Group]:
+        return {group: self._groups[group] for group in groups if group in self._groups.keys()}
+
+    def get_associated_user(self, name: str) -> Dict:
+        user = self._users[name]
+        roles = [self._roles[role] for role in user.roles if role in self._roles.keys()]
+        groups = [self.groups[group] for role in roles for group in role.groups if group in self._groups.keys()]
+        return {
+            'user': user,
+            'roles': roles,
+            'groups': groups
+        }
 
 
 class Table:

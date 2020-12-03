@@ -4,3 +4,14 @@ workflow
 	render -> generates the sql files from configs
 	stage  -> compares files to what is in the object db
 	commit -> deploy the changes to redshift
+
+
+user and role mapping
+
+	user can have many roles
+	roles can belong to many users
+
+	a role contains many groups
+	a group belongs to many roles
+
+Groups -> Roles -> Users

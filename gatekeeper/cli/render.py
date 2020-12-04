@@ -1,35 +1,29 @@
 import shutil
 from argparse import Namespace
-from gatekeeper.project.gatekeeper_config import (
-    PROJECT_CONFIG_FILE_PATHS,
-    PROJECT_DIRECTORY_PATHS
-)
-from gatekeeper.project.project_config import ConfigMapping
 from gatekeeper.project.environment import get_jinja_environment
+from gatekeeper.project.config_parsing import parse_project_configs
+from gatekeeper.project.helpers import (
+    format_template_name,
+    format_render_key
+)
+from gatekeeper.project.file_manager import (
+    get_project_path
+)
 
 
 def render(cmd: Namespace) -> None:
-    # TODO: variable naming in render command is horrible
-    # TODO: add try / catch logic to allow for nice error messages
 
-    # get the parsed and mapped yaml configs from the project
-    config_mapping = ConfigMapping.from_config_paths(config_paths=PROJECT_CONFIG_FILE_PATHS)
-
-    # get jinja to render our sql templates
     jinja = get_jinja_environment()
+    gate_keeper = parse_project_configs()
 
-    for obj_type, objs in config_mapping.to_render().items():
+    for key in gate_keeper.render_keys:
+        template = jinja.get_template(format_template_name(key))
+        path = get_project_path('rendered') / key
+        shutil.rmtree(path)
 
-        template = jinja.get_template(f"{obj_type}.sql")
-
-        render_path = PROJECT_DIRECTORY_PATHS['rendered'] / obj_type
-
-        # Clear out the path before we render the objects.
-        # Insures that the rendered files always reflect the config
-        shutil.rmtree(render_path)
-
-        for obj_name, config_value in objs.items():
-            rendered_file_path = render_path / f"{obj_name}.sql"
-            content = template.render(**{obj_type.rstrip('s'): config_value})
-            rendered_file_path.parent.mkdir(exist_ok=True, parents=True)
-            rendered_file_path.write_text(content)
+        for item in gate_keeper[key].values():
+            content = template.render(**{format_render_key(key): item})
+            write_path = path / item.file_name
+            write_path.parent.mkdir(exist_ok=True)
+            write_path.touch(exist_ok=True)
+            write_path.write_text(content)

@@ -93,6 +93,9 @@ def get_config_path(name: str) -> Path:
     return PROJECT_CONFIG_FILE_PATHS[name]
 
 
+def get_project_path(name: str) -> Path:
+    return PROJECT_DIRECTORY_PATHS[name]
+
 #########################################################
 #               HIGHER LEVEL FUNCTIONS                  #
 #########################################################

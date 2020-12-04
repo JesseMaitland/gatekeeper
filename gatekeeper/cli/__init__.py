@@ -1,15 +1,12 @@
 from argparse import ArgumentParser
 
 from .init import init
-# from .render import render
+from .render import render
 from .digest import digest
 from .fetch import fetch
 from .stage import stage
 from .query import query
 from .cat import cat
-
-def render():
-    print("is now placeholder")
 
 
 def parse_args():

@@ -5,16 +5,32 @@
 
 CREATE GROUP {{group.name}};
 
--- granting usage access to {{group.name}}
-{% for schema in group.schemas%}
+-- granting usage access to group {{group.name}}
+{% for schema in group.schemas.keys()%}
 GRANT USAGE ON SCHEMA {{schema}} TO GROUP {{group.name}};
 {%endfor%}
 
+{% for schema, options in group.schemas.items() %}
+-- grant permissions to schema {{schema}}
+    {% for resource, grants in options.resources.items()%}
+        {%if resource == 'tables'%}
+            {% if grants.usage[0] == 'all' and grants.names[0] == 'all'%}
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA {{schema}} TO GROUP {{group.name}};
+            {%endif%}
+            {% if grants.usage[0] == 'all' and grants.names[0] != 'all'%}
+                {% for name in grants.names%}
+GRANT ALL PRIVILEGES ON TABLE {{schema}}.{{name}} TO GROUP {{group.name}};
+                {%endfor%}
+            {%endif%}
+            {% if grants.usage[0] != 'all' and grants.names[0] == 'all'%}
+GRANT {{' '.join(grants.usage)}} ON TABLE {{schema}}.{{name}} TO GROUP {{group.name}};
+            {%endif%}
+            {% if grants.usage[0] != 'all' and grants.names[0] != 'all'%}
+                {% for name in grants.names%}
+GRANT {{' '.join(grants.usage).upper()}} ON TABLE {{schema}}.{{name}} TO GROUP {{group.name}};
+                {%endfor%}
+            {%endif%}
+        {%endif%}
+    {%endfor%}
 
--- granting read / write access to {{group.name}}
-{% for schema in group.schemas%}
-{%if group.permissions[0] == 'all' %}GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA {{schema}} TO GROUP {{group.name}};
-{%else%}
-GRANT {%for p in group.permissions%}{{p.upper()}}{% if not loop.last %}, {% endif %}{%endfor%} ON ALL TABLES IN SCHEMA {{schema}} TO GROUP {{group.name}};
-{%endif%}
 {%endfor%}

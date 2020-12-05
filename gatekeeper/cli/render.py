@@ -19,7 +19,11 @@ def render(cmd: Namespace) -> None:
     for key in gate_keeper.render_keys:
         template = jinja.get_template(format_template_name(key))
         path = get_project_path('rendered') / key
-        shutil.rmtree(path)
+
+        try:
+            shutil.rmtree(path)
+        except FileNotFoundError:
+            pass
 
         for item in gate_keeper[key].values():
             content = template.render(**{format_render_key(key): item})

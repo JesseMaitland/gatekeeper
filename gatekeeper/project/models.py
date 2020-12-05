@@ -18,8 +18,13 @@ class Model:
 class Group(Model):
 
     # TODO: actually create the group implementation
-    def __init__(self, name: str, **kwargs) -> None:
+    def __init__(self, name: str, schemas: Dict, **kwargs) -> None:
         super(Group, self).__init__(name)
+        self._schemas = schemas
+
+    @property
+    def schemas(self) -> Dict:
+        return self._schemas
 
 
 class Role(Model):

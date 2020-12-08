@@ -1,19 +1,12 @@
 import yaml
-from gatekeeper.project.helpers import format_model_name
 from gatekeeper.project.file_manager import get_config_path
-from gatekeeper.project.models import (
-    User, Group, Role, GateKeeper
-)
+from gatekeeper.project.models import GateKeeper
 
 
-def parse_project_configs():
-
-    types = ['groups', 'users', 'roles']
-    parsed = {}
-
-    for type_ in types:
-        config = yaml.safe_load(get_config_path(type_).open())[type_]
-        model = globals()[format_model_name(type_)]
-        parsed[type_] = {key: model(name=key, **values) for key, values in config.items()}
-
-    return GateKeeper(**parsed)
+def create_gatekeeper() -> GateKeeper:
+    GateKeeper.register_yaml_constructors()
+    return GateKeeper(
+        users=list(yaml.safe_load_all(get_config_path('users').open())),
+        roles=list(yaml.safe_load_all(get_config_path('roles').open())),
+        groups=list(yaml.safe_load_all(get_config_path('groups').open()))
+    )

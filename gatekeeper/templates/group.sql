@@ -6,31 +6,20 @@
 CREATE GROUP {{group.name}};
 
 -- granting usage access to group {{group.name}}
-{% for schema in group.schemas.keys()%}
-GRANT USAGE ON SCHEMA {{schema}} TO GROUP {{group.name}};
-{%endfor%}
+GRANT USAGE ON SCHEMA {{group.schema}} TO GROUP {{group.name}};
 
-{% for schema, options in group.schemas.items() %}
--- grant permissions to schema {{schema}}
-    {% for resource, grants in options.resources.items()%}
-        {%if resource == 'tables'%}
-            {% if grants.usage[0] == 'all' and grants.names[0] == 'all'%}
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA {{schema}} TO GROUP {{group.name}};
-            {%endif%}
-            {% if grants.usage[0] == 'all' and grants.names[0] != 'all'%}
-                {% for name in grants.names%}
-GRANT ALL PRIVILEGES ON TABLE {{schema}}.{{name}} TO GROUP {{group.name}};
-                {%endfor%}
-            {%endif%}
-            {% if grants.usage[0] != 'all' and grants.names[0] == 'all'%}
-GRANT {{' '.join(grants.usage)}} ON TABLE {{schema}}.{{name}} TO GROUP {{group.name}};
-            {%endif%}
-            {% if grants.usage[0] != 'all' and grants.names[0] != 'all'%}
-                {% for name in grants.names%}
-GRANT {{' '.join(grants.usage).upper()}} ON TABLE {{schema}}.{{name}} TO GROUP {{group.name}};
-                {%endfor%}
-            {%endif%}
-        {%endif%}
-    {%endfor%}
 
+-- granting object access
+{%if group.kind == 'full'%}
+GRANT ALL PRIVILEGES ON ALL {{group.access.upper()}} IN SCHEMA {{group.schema}} TO GROUP {{group.name}};
+{%endif%}
+{%if group.kind == 'limited_read' and group.access in ['tables', 'views']%}
+{% for name in group.names %}
+GRANT SELECT ON {{group.schema}}.{{name}} TO GROUP {{group.name}};
 {%endfor%}
+{%endif%}
+{%if group.kind == 'limited_write' and group.access in ['tables', 'views']%}
+{% for name in group.names %}
+GRANT SELECT, INSERT, UPDATE, DELETE ON {{group.schema}}.{{name}} TO GROUP {{group.name}};
+{%endfor%}
+{%endif%}

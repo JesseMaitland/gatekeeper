@@ -1,3 +1,4 @@
+import yaml
 from typing import Dict, List
 
 
@@ -5,6 +6,11 @@ class Model:
 
     def __init__(self, name: str) -> None:
         self._name = name
+
+    @classmethod
+    def from_yaml(cls, loader, node) -> 'User':
+        values = loader.construct_mapping(node, deep=True)
+        return cls(**values)
 
     @property
     def name(self) -> str:
@@ -17,42 +23,80 @@ class Model:
 
 class Group(Model):
 
-    # TODO: actually create the group implementation
-    def __init__(self, name: str, schemas: Dict, **kwargs) -> None:
+    yaml_tag = '!Group'
+    allowed_kinds = ['full', 'limited_read', 'limited_write']
+
+    def __init__(self, name: str, schema: str, access: str, kind: str, names: List[str] = None) -> None:
         super(Group, self).__init__(name)
-        self._schemas = schemas
+        self._schema = schema
+        self._access = access
+        self._kind = kind
+        self._names = names or []
+        self._validate_construction()
+
+    def _validate_kind(self, kind: str) -> None:
+        if kind not in self.allowed_kinds:
+            raise ValueError(f"{kind} is not allowed, must specify any of {self.allowed_kinds}")
+
+    def _validate_construction(self) -> None:
+        if 'limited' in self._kind and not self._names:
+            raise ValueError(f"{self._kind} was specified. A list of names for group {self.name} must be provided.")
 
     @property
-    def schemas(self) -> Dict:
-        return self._schemas
+    def schema(self) -> str:
+        return self._schema
+
+    @property
+    def access(self) -> str:
+        return self._access
+
+    @property
+    def kind(self) -> str:
+        return self._kind
+
+    @property
+    def names(self) -> List[str]:
+        return self._names
 
 
 class Role(Model):
 
-    def __init__(self, name: str, groups: List[str]) -> None:
+    yaml_tag = '!Role'
+
+    def __init__(self, name: str, group_names: List[str]) -> None:
         super(Role, self).__init__(name)
-        self._group_keys = groups
+        self._group_names = group_names
         self._groups = []
 
     @property
     def groups(self) -> List[Group]:
         return self._groups
 
-    def set_groups(self, groups: Dict[str, Group]) -> None:
-        self._groups = [value for key, value in groups.items() if key in self._group_keys]
+    @property
+    def group_names(self) -> List[str]:
+        return self._group_names
+
+    def add_group(self, group: Group) -> None:
+        self._groups.append(group)
 
 
 class User(Model):
 
-    def __init__(self, name: str, is_admin: bool = False, roles: List[str] = None) -> None:
+    yaml_tag = '!User'
+
+    def __init__(self, name: str, role_names: List[str], is_admin: bool = False) -> None:
         super(User, self).__init__(name)
         self._is_admin = is_admin
-        self._role_keys = roles or []
+        self._role_names = role_names or []
         self._roles = []
 
     @property
     def is_admin(self) -> bool:
         return self._is_admin
+
+    @property
+    def role_names(self) -> List[str]:
+        return self._role_names
 
     @property
     def roles(self) -> List[Role]:
@@ -62,19 +106,25 @@ class User(Model):
     def groups(self) -> List[Group]:
         return [group for role in self._roles for group in role.groups]
 
-    def set_roles(self, roles: Dict[str, Role]) -> None:
-        self._roles = [value for key, value in roles.items() if key in self._role_keys]
+    def add_role(self, role: Role) -> None:
+        self._roles.append(role)
 
 
 class GateKeeper:
 
-    def __init__(self, users: Dict[str, User], roles: Dict[str, Role], groups: Dict[str, Group]) -> None:
+    def __init__(self, users: List[User], roles: List[Role], groups: List[Group] = None) -> None:
 
-        for role in roles.values():
-            role.set_groups(groups)
+        # map roles
+        for role in roles:
+            for user in users:
+                if role.name in user.role_names:
+                    user.add_role(role)
 
-        for user in users.values():
-            user.set_roles(roles)
+        # map groups
+        for group in groups:
+            for role in roles:
+                if group.name in role.group_names:
+                    role.add_group(group)
 
         self._items = {
             'users': users,
@@ -82,8 +132,18 @@ class GateKeeper:
             'groups': groups
         }
 
+    @staticmethod
+    def register_yaml_constructors() -> None:
+        yaml.SafeLoader.add_constructor('!User', User.from_yaml)
+        yaml.SafeLoader.add_constructor('!Role', Role.from_yaml)
+        yaml.SafeLoader.add_constructor('!Group', Group.from_yaml)
+
     def __getitem__(self, key) -> Dict:
         return self._items[key]
+
+    @property
+    def render_keys(self) -> List[str]:
+        return ['users', 'groups']
 
     @property
     def users(self) -> Dict[str, User]:
@@ -96,29 +156,6 @@ class GateKeeper:
     @property
     def groups(self) -> Dict[str, Group]:
         return self._items['groups']
-
-    @property
-    def render_keys(self) -> List[str]:
-        return ['users', 'groups']
-
-    def get_users(self, *names) -> Dict[str, User]:
-        return {name: self._items['users'][name] for name in names if name in self._items['users'].keys()}
-
-    def get_roles(self, *roles) -> Dict[str, Role]:
-        return {role: self._items['roles'] for role in roles if role in self._items['roles'].keys()}
-
-    def get_groups(self, *groups) -> Dict[str, Group]:
-        return {group: self._items['groups'][group] for group in groups if group in self._items['groups'].keys()}
-
-    def get_associated_user(self, name: str) -> Dict:
-        user = self._items['users'][name]
-        roles = [self._items['roles'][role] for role in user.roles if role in self._items['roles'].keys()]
-        groups = [self._items['groups'][group] for role in roles for group in role.groups if group in self._items['groups'].keys()]
-        return {
-            'user': user,
-            'roles': roles,
-            'groups': groups
-        }
 
 
 class Table:

@@ -1,15 +1,16 @@
-def execute_query(self, query: str, params: List = None, fetch: bool = True) -> Tuple:
-    with self.redshift_connection() as conn:
-        with conn.cursor() as cursor:
-            result = None
+import yaml
 
-            if params:
-                cursor.execute(query, params)
-            else:
-                cursor.execute(query)
 
-            if fetch:
-                result = cursor.fetchall()
+class Foo(yaml.YAMLObject):
 
-            conn.commit()
-            return result
+    yaml_tag = '!Foo'
+
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+
+
+
+f = Foo(name='bar')
+
+print(f.name)

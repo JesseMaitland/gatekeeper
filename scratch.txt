@@ -1,0 +1,17 @@
+users:
+  jesse:
+    is_admin: false
+    roles:
+      - foo
+      - bar
+
+  conan:
+    is_admin: false
+    roles:
+      - foo
+
+  terry:
+    is_admin: false
+    roles:
+      - foo
+      - bar

@@ -12,7 +12,7 @@ from gatekeeper.project.file_manager import (
 
 
 def render(cmd: Namespace) -> None:
-
+    print("rendering configs to .sql files")
     jinja = get_jinja_environment()
     gate_keeper = create_gatekeeper()
 

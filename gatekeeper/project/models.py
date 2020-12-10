@@ -171,11 +171,25 @@ class GateKeeper:
         return [i.name for i in self._items[kind]]
 
 
-class Table:
+class Schema(Model):
+
+    def __init__(self, name: str) -> None:
+        super(Schema, self).__init__(name)
+
+    @classmethod
+    def from_sql_result(cls, name: str) -> 'Model':
+        return cls(name)
+
+
+class Table(Model):
 
     def __init__(self, schema: str, name: str) -> None:
+        super(Table, self).__init__(name)
         self._schema = schema
-        self._name = name
+
+    @classmethod
+    def from_sql_result(cls, schema: str, name: str) -> 'Model':
+        return cls(schema, name)
 
     @property
     def schema(self) -> str:

@@ -5,7 +5,7 @@
 
 
 -- create user
-CREATE USER {{user.name}} WITH PASSWORD 'xxxxxxxxxx';
+CREATE USER {{user.name}};
 
 {%if user.groups%}
 -- add the user {{user.name}} to its assigned groups through the role association.

@@ -17,7 +17,8 @@ OBJECT_STORE_ROOT = PROJECT_ROOT / '.gk'
 # paths to be object store allow reference by name
 OBJECT_STORE_PATHS = {
     'users': OBJECT_STORE_ROOT / 'users',
-    'groups': OBJECT_STORE_ROOT / 'groups'
+    'groups': OBJECT_STORE_ROOT / 'groups',
+    'commits': OBJECT_STORE_ROOT / 'commits'
 }
 
 # mapping of project directories to be referenced by name
@@ -114,9 +115,9 @@ def populate_object_store(rebuild: bool = False) -> None:
 def generate_status() -> dict:
 
     status = {
-        'to_add': [],
-        'to_remove': [],
-        'to_update': []
+        'to_add':    {'users': [], 'groups': [], 'ownership': []},
+        'to_remove': {'users': [], 'groups': [], 'ownership': []},
+        'to_update': {'users': [], 'groups': [], 'ownership': []}
     }
 
     for type_ in TYPES:
@@ -126,12 +127,12 @@ def generate_status() -> dict:
                 stored_path = fetch_from_object_store(path.name, type_)
 
             except FileNotFoundError:
-                status['to_add'].append(path)
+                status['to_add'][type_].append(path)
 
             else:
                 file_hash = hash_file(path)
                 if file_hash != stored_path.name:
-                    status['to_update'].append(path)
+                    status['to_update'][type_].append(path)
 
         for path in get_object_store_paths(type_):
 
@@ -139,6 +140,6 @@ def generate_status() -> dict:
                 _ = fetch_from_rendered(path.name.split('-')[-1], type_)
 
             except FileNotFoundError:
-                status['to_remove'].append(path)
+                status['to_remove'][type_].append(path.name.split('-')[-1].split('.')[0])
 
     return status

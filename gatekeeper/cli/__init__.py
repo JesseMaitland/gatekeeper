@@ -8,6 +8,8 @@ from .stage import stage
 from .query import query
 from .cat import cat
 from .audit import audit
+from .commit import commit
+
 
 def parse_args():
     parser = ArgumentParser()
@@ -32,7 +34,10 @@ def parse_args():
     fetch_parser.set_defaults(func=fetch)
 
     staging_parser = sub_parsers.add_parser('stage')
-    staging_parser.set_defaults(func=stage)
+    staging_parser.set_defaults(func=[render, stage])
+
+    commit_parser = sub_parsers.add_parser('commit')
+    commit_parser.set_defaults(func=[digest, commit])
 
     query_parser = sub_parsers.add_parser('query')
     query_parser.add_argument('query')
@@ -41,6 +46,5 @@ def parse_args():
     audit_parser = sub_parsers.add_parser('audit')
     audit_parser.add_argument('kind', choices=['users', 'groups'])
     audit_parser.set_defaults(func=audit)
-
 
     return parser.parse_args()

@@ -19,5 +19,4 @@ def audit(cmd: Namespace) -> None:
     results = map_results(*execute_query('REDSHIFT', query), format_model_name(cmd.kind))
 
     audit_result = Audit.perform(gatekeeper.get_names(cmd.kind), [r.name for r in results])
-
     audit_result.print_table()

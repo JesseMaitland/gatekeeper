@@ -1,6 +1,6 @@
 from typing import List, Tuple, Type
 from gatekeeper.project.models import (
-    Model, User, Table, Group
+    Model, User, Table, Group, Schema
 )
 
 

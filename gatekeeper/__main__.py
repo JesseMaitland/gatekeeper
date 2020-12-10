@@ -3,7 +3,12 @@ from gatekeeper.cli import parse_args
 
 def main():
     cmd = parse_args()
-    cmd.func(cmd)
+
+    if type(cmd.func) == list:
+        for f in cmd.func:
+            f(cmd)
+    else:
+        cmd.func(cmd)
 
 
 if __name__ == '__main__':

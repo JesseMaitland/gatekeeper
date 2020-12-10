@@ -7,7 +7,7 @@ from .fetch import fetch
 from .stage import stage
 from .query import query
 from .cat import cat
-
+from .audit import audit
 
 def parse_args():
     parser = ArgumentParser()
@@ -38,6 +38,9 @@ def parse_args():
     query_parser.add_argument('query')
     query_parser.set_defaults(func=query)
 
+    audit_parser = sub_parsers.add_parser('audit')
+    audit_parser.add_argument('kind', choices=['users', 'groups'])
+    audit_parser.set_defaults(func=audit)
 
 
     return parser.parse_args()

@@ -35,5 +35,13 @@ def get_redshift_connection() -> connection:
     return psycopg2.connect(connection_string)
 
 
-
-
+def gatekeeper_env(provide_config: bool = False):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            load_gatekeeper_env()
+            if provide_config:
+                return func(config=get_gatekeeper_config(), *args, **kwargs)
+            else:
+                return func(*args, **kwargs)
+        return wrapper
+    return decorator

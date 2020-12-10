@@ -8,9 +8,13 @@ class Model:
         self._name = name
 
     @classmethod
-    def from_yaml(cls, loader, node) -> 'User':
+    def from_yaml(cls, loader, node) -> 'Model':
         values = loader.construct_mapping(node, deep=True)
         return cls(**values)
+
+    @classmethod
+    def from_sql_result(cls, name: str) -> 'Model':
+        raise NotImplementedError
 
     @property
     def name(self) -> str:
@@ -22,7 +26,6 @@ class Model:
 
 
 class Group(Model):
-
     yaml_tag = '!Group'
     allowed_kinds = ['full', 'limited_read', 'limited_write']
 
@@ -32,15 +35,20 @@ class Group(Model):
         self._access = access
         self._kind = kind
         self._names = names or []
+        self._validate_kind()
         self._validate_construction()
 
-    def _validate_kind(self, kind: str) -> None:
-        if kind not in self.allowed_kinds:
-            raise ValueError(f"{kind} is not allowed, must specify any of {self.allowed_kinds}")
+    def _validate_kind(self) -> None:
+        if self.kind and self.kind not in self.allowed_kinds:
+            raise ValueError(f"{self.kind} is not allowed, must specify any of {self.allowed_kinds}")
 
     def _validate_construction(self) -> None:
         if 'limited' in self._kind and not self._names:
             raise ValueError(f"{self._kind} was specified. A list of names for group {self.name} must be provided.")
+
+    @classmethod
+    def from_sql_result(cls, name: str) -> 'Model':
+        return cls(name, "", "", "")
 
     @property
     def schema(self) -> str:
@@ -60,7 +68,6 @@ class Group(Model):
 
 
 class Role(Model):
-
     yaml_tag = '!Role'
 
     def __init__(self, name: str, group_names: List[str]) -> None:
@@ -81,7 +88,6 @@ class Role(Model):
 
 
 class User(Model):
-
     yaml_tag = '!User'
 
     def __init__(self, name: str, role_names: List[str], is_admin: bool = False) -> None:
@@ -89,6 +95,10 @@ class User(Model):
         self._is_admin = is_admin
         self._role_names = role_names or []
         self._roles = []
+
+    @classmethod
+    def from_sql_result(cls, name: str) -> 'User':
+        return cls(name, role_names=[], is_admin=False)
 
     @property
     def is_admin(self) -> bool:
@@ -156,6 +166,9 @@ class GateKeeper:
     @property
     def groups(self) -> Dict[str, Group]:
         return self._items['groups']
+
+    def get_names(self, kind: str) -> List[str]:
+        return [i.name for i in self._items[kind]]
 
 
 class Table:

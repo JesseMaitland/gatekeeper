@@ -73,6 +73,12 @@ def clear_object_store() -> None:
                 p.unlink()
 
 
+def clear_commits() -> None:
+    for path in PROJECT_DIRECTORY_PATHS['commits'].iterdir():
+        if path.is_file():
+            path.unlink()
+
+
 def write_head_file(file_hash: str) -> None:
     HEAD_FILE_PATH.write_text(file_hash)
 
@@ -81,15 +87,29 @@ def read_head_file() -> str:
     return HEAD_FILE_PATH.read_text()
 
 
-def rewind_head() -> str:
+def remove_commit(file_hash: str) -> None:
+    commit = fetch_commit(file_hash)
+    commit.unlink()
+
+
+def rewind_head() -> None:
     index = INDEX_FILE_PATH.read_text().split()
-    last_entry = index.pop(-1).split(' : ')[0]
-    write_head_file(last_entry)
-    INDEX_FILE_PATH.write_text('\n'.join(index))
+
+    if len(index) <= 1:
+        HEAD_FILE_PATH.unlink()
+        HEAD_FILE_PATH.touch(exist_ok=True)
+        INDEX_FILE_PATH.unlink()
+        INDEX_FILE_PATH.touch(exist_ok=True)
+        clear_commits()
+    else:
+        last_entry = index.pop(-1)
+        remove_commit(last_entry)
+        write_head_file(index[-1])
+        INDEX_FILE_PATH.write_text('\n'.join(index))
 
 
 def write_commit(content_path: Path, message: str) -> None:
-    content_hash = hash_file(content_path, 'commit') + f" : {datetime.now().isoformat()}"
+    content_hash = hash_file(content_path, 'commit')
     commit = PROJECT_DIRECTORY_PATHS['commits'] / content_hash
 
     with commit.open(mode='w+') as file:
@@ -117,6 +137,14 @@ def get_object_store_paths(type_: str) -> Generator[Path, None, None]:
     for p in path.iterdir():
         if p.is_file():
             yield p
+
+
+def fetch_commit(file_hash: str) -> Path:
+    path = PROJECT_DIRECTORY_PATHS['commits']
+    for p in path.iterdir():
+        if p.is_file():
+            if p.name == file_hash:
+                return p
 
 
 def fetch_from_object_store(name: str, type_: str) -> Path:

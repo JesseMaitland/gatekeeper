@@ -39,7 +39,7 @@ def parse_args():
     staging_parser.set_defaults(func=[render, stage])
 
     commit_parser = sub_parsers.add_parser('commit')
-    commit_parser.set_defaults(func=commit)
+    commit_parser.set_defaults(func=[digest, commit])
 
     status_parser = sub_parsers.add_parser('status')
     status_parser.set_defaults(func=status)

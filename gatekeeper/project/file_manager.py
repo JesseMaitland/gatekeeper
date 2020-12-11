@@ -147,6 +147,10 @@ def fetch_commit(file_hash: str) -> Path:
                 return p
 
 
+def parse_commit(commit_path: Path) -> str:
+    return commit_path.read_text().split(MESSAGE_TOKEN)[-1].lstrip()
+
+
 def fetch_from_object_store(name: str, type_: str) -> Path:
     path = OBJECT_STORE_PATHS[type_]
     for p in path.iterdir():
@@ -174,6 +178,13 @@ def get_config_path(name: str) -> Path:
 def get_project_path(name: str) -> Path:
     return PROJECT_DIRECTORY_PATHS[name]
 
+
+def read_index() -> List['str']:
+    return INDEX_FILE_PATH.read_text().split()
+
+
+def move_commit_to_executed(file_hash: str) -> None:
+    pass
 
 #  TODO: refactor these into their own module
 #########################################################

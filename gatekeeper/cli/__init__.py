@@ -11,6 +11,7 @@ from .audit import audit
 from .commit import commit
 from .status import status
 from .rewind import rewind
+from .up import up
 
 
 def parse_args():
@@ -40,6 +41,9 @@ def parse_args():
 
     commit_parser = sub_parsers.add_parser('commit')
     commit_parser.set_defaults(func=[digest, commit])
+
+    up_parser = sub_parsers.add_parser('up')
+    up_parser.set_defaults(func=up)
 
     status_parser = sub_parsers.add_parser('status')
     status_parser.set_defaults(func=status)

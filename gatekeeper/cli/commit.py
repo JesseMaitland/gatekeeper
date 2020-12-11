@@ -39,3 +39,7 @@ def commit(cmd: Namespace) -> None:
     write_commit(STAGING_FILE_PATH, message)
     write_head_file(staged_hash)
     update_index(staged_hash)
+
+    # now clear out whatever is in staging
+    STAGING_FILE_PATH.unlink()
+    STAGING_FILE_PATH.touch()

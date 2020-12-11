@@ -36,6 +36,7 @@ def stage(cmd: Namespace) -> None:
             # and we will remove all access rights to everything.
             schemas = fetch_and_map_query_result('REDSHIFT', 'schemas')
             groups = fetch_and_map_query_result('REDSHIFT', 'groups')
+            users = fetch_and_map_query_result('REDSHIFT', 'users')
 
             # dropping things means we need to revoke all rights and group membership
             for kind in change_result['to_remove'].keys():
@@ -47,6 +48,6 @@ def stage(cmd: Namespace) -> None:
                     continue
 
                 for entry in change_result['to_remove'][kind]:
-                    content = template.render(**{kind: entry, 'groups': groups, 'schemas': schemas})
+                    content = template.render(**{kind: entry, 'db_groups': groups, 'schemas': schemas, 'db_users': users})
                     staging_file.write(content)
                     staging_file.write('\n\n')

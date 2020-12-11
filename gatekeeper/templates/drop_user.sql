@@ -4,7 +4,7 @@
 **************************************************************************/
 
 -- remove this user from all groups regardless of membership.
-{% for group in groups %}
+{% for group in db_groups %}
 ALTER GROUP {{group.name}} DROP USER {{users}};
 {%endfor%}
 

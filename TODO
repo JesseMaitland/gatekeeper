@@ -19,3 +19,5 @@
 		- store only hashed values of the rendered files. there is no need to store the contents
 
 
+	project structure:
+		- re-factor project/file_manager.py. this could be broken up / better organized

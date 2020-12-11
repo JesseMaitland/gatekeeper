@@ -1,8 +1,10 @@
 from hashlib import sha1
 from pathlib import Path
+from datetime import datetime
 from typing import Generator, Dict, List
 
-MESSAGE_TOKEN = '>>>>MESSAGE'
+MESSAGE_TOKEN = '>>>>MESSAGE<<<<'
+TIMESTAMP_TOKEN = '>>>>TIMESTAMP<<<<'
 
 # Path to the cli environment config file
 GATEKEEPER_CONFIG_PATH = Path.cwd().absolute() / '.gatekeeper'
@@ -21,6 +23,9 @@ HEAD_FILE_PATH = OBJECT_STORE_ROOT / 'HEAD.txt'
 
 # index file path
 INDEX_FILE_PATH = OBJECT_STORE_ROOT / 'INDEX.txt'
+
+# history file
+HISTORY_FILE_PATH = OBJECT_STORE_ROOT / 'HISTORY.txt'
 
 # paths to be object store allow reference by name
 OBJECT_STORE_PATHS = {
@@ -76,8 +81,15 @@ def read_head_file() -> str:
     return HEAD_FILE_PATH.read_text()
 
 
+def rewind_head() -> str:
+    index = INDEX_FILE_PATH.read_text().split()
+    last_entry = index.pop(-1).split(' : ')[0]
+    write_head_file(last_entry)
+    INDEX_FILE_PATH.write_text('\n'.join(index))
+
+
 def write_commit(content_path: Path, message: str) -> None:
-    content_hash = hash_file(content_path, 'commit')
+    content_hash = hash_file(content_path, 'commit') + f" : {datetime.now().isoformat()}"
     commit = PROJECT_DIRECTORY_PATHS['commits'] / content_hash
 
     with commit.open(mode='w+') as file:

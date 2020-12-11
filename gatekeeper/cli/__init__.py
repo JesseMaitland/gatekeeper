@@ -10,6 +10,7 @@ from .cat import cat
 from .audit import audit
 from .commit import commit
 from .status import status
+from .rewind import rewind
 
 
 def parse_args():
@@ -42,6 +43,9 @@ def parse_args():
 
     status_parser = sub_parsers.add_parser('status')
     status_parser.set_defaults(func=status)
+
+    rewind_parser = sub_parsers.add_parser('rewind')
+    rewind_parser.set_defaults(func=rewind)
 
     query_parser = sub_parsers.add_parser('query')
     query_parser.add_argument('query')

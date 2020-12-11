@@ -9,6 +9,7 @@ from .query import query
 from .cat import cat
 from .audit import audit
 from .commit import commit
+from .status import status
 
 
 def parse_args():
@@ -37,7 +38,10 @@ def parse_args():
     staging_parser.set_defaults(func=[render, stage])
 
     commit_parser = sub_parsers.add_parser('commit')
-    commit_parser.set_defaults(func=[digest, commit])
+    commit_parser.set_defaults(func=commit)
+
+    status_parser = sub_parsers.add_parser('status')
+    status_parser.set_defaults(func=status)
 
     query_parser = sub_parsers.add_parser('query')
     query_parser.add_argument('query')

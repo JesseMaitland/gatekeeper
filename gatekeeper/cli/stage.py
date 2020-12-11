@@ -15,8 +15,7 @@ def stage(cmd: Namespace) -> None:
     change_result = generate_status()
     jinja = get_jinja_environment()
 
-    for key, value in change_result.items():
-        print(f"{key} : {value}")
+    change_result.print_status()
 
     with STAGING_FILE_PATH.open(mode='w') as staging_file:
 

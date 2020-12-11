@@ -1,6 +1,8 @@
 from hashlib import sha1
 from pathlib import Path
-from typing import Generator, Dict
+from typing import Generator, Dict, List
+
+MESSAGE_TOKEN = '>>>>MESSAGE'
 
 # Path to the cli environment config file
 GATEKEEPER_CONFIG_PATH = Path.cwd().absolute() / '.gatekeeper'
@@ -14,17 +16,23 @@ STAGING_FILE_PATH = PROJECT_ROOT / 'staged.sql'
 # root for the object store, where the state of the project is stored
 OBJECT_STORE_ROOT = PROJECT_ROOT / '.gk'
 
+# HEAD file path
+HEAD_FILE_PATH = OBJECT_STORE_ROOT / 'HEAD.txt'
+
+# index file path
+INDEX_FILE_PATH = OBJECT_STORE_ROOT / 'INDEX.txt'
+
 # paths to be object store allow reference by name
 OBJECT_STORE_PATHS = {
     'users': OBJECT_STORE_ROOT / 'users',
-    'groups': OBJECT_STORE_ROOT / 'groups',
-    'commits': OBJECT_STORE_ROOT / 'commits'
+    'groups': OBJECT_STORE_ROOT / 'groups'
 }
 
 # mapping of project directories to be referenced by name
 PROJECT_DIRECTORY_PATHS = {
     'configs': PROJECT_ROOT / 'configs',
-    'rendered': PROJECT_ROOT / 'rendered'
+    'rendered': PROJECT_ROOT / 'rendered',
+    'commits': PROJECT_ROOT / 'commits'
 }
 
 # mapping of all the yaml config files used by gatekeeper to render sql templates
@@ -38,9 +46,13 @@ PROJECT_CONFIG_FILE_PATHS = {
 TYPES = ['users', 'groups']
 
 
-def hash_file(path: Path) -> str:
+def hash_file(path: Path, file_name: str = None) -> str:
     digest = sha1(path.read_text().encode()).hexdigest()
-    return f"{digest}-{path.name}"
+
+    if file_name:
+        return f"{digest}-{file_name}"
+    else:
+        return f"{digest}-{path.name}"
 
 
 def save_file_hash(path: Path, file_hash: str, type_: str) -> None:
@@ -54,6 +66,31 @@ def clear_object_store() -> None:
         for p in path.iterdir():
             if p.is_file():
                 p.unlink()
+
+
+def write_head_file(file_hash: str) -> None:
+    HEAD_FILE_PATH.write_text(file_hash)
+
+
+def read_head_file() -> str:
+    return HEAD_FILE_PATH.read_text()
+
+
+def write_commit(content_path: Path, message: str) -> None:
+    content_hash = hash_file(content_path, 'commit')
+    commit = PROJECT_DIRECTORY_PATHS['commits'] / content_hash
+
+    with commit.open(mode='w+') as file:
+        file.write(message)
+        file.write(f'\n\n{MESSAGE_TOKEN}')
+        file.write('\n\n')
+        file.write(content_path.read_text())
+
+
+def update_index(file_hash: str) -> None:
+    with INDEX_FILE_PATH.open(mode='a') as index:
+        index.write(file_hash)
+        index.write('\n')
 
 
 def get_rendered_paths(type_: str) -> Generator[Path, None, None]:
@@ -97,6 +134,8 @@ def get_config_path(name: str) -> Path:
 def get_project_path(name: str) -> Path:
     return PROJECT_DIRECTORY_PATHS[name]
 
+
+#  TODO: refactor these into their own module
 #########################################################
 #               HIGHER LEVEL FUNCTIONS                  #
 #########################################################
@@ -112,10 +151,38 @@ def populate_object_store(rebuild: bool = False) -> None:
             save_file_hash(path, file_hash, type_)
 
 
-def generate_status() -> dict:
+class StateStatus:
 
+    def __init__(self, to_add: Dict[str, List], to_remove: Dict[str, List], to_update: Dict[str, List]) -> None:
+        self._items = {
+            'to_add': to_add,
+            'to_remove': to_remove,
+            'to_update': to_update
+        }
+
+    def __getitem__(self, item) -> Dict[str, List]:
+        return self._items[item]
+
+    @property
+    def add(self) -> bool:
+        return True if [v for v in self._items['to_add'].values()] else False
+
+    @property
+    def remove(self) -> bool:
+        return True if [v for v in self._items['to_remove'].values()] else False
+
+    @property
+    def update(self) -> bool:
+        return True if [v for v in self._items['to_update'].values()] else False
+
+    def print_status(self):
+        for key, value in self._items.items():
+            print(f"{key} : {value}")
+
+
+def generate_status() -> StateStatus:
     status = {
-        'to_add':    {'users': [], 'groups': [], 'ownership': []},
+        'to_add': {'users': [], 'groups': [], 'ownership': []},
         'to_remove': {'users': [], 'groups': [], 'ownership': []},
         'to_update': {'users': [], 'groups': [], 'ownership': []}
     }
@@ -142,4 +209,4 @@ def generate_status() -> dict:
             except FileNotFoundError:
                 status['to_remove'][type_].append(path.name.split('-')[-1].split('.')[0])
 
-    return status
+    return StateStatus(**status)

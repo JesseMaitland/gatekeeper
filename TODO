@@ -1,8 +1,21 @@
 
 -- GATEKEEPER
-add schema ownership validation to check that a schema has not been assigned ownership
-to more than one user.
+
+	config parsing:
+		- do cross check validation to make sure the yaml files all reference each other properly
+		- add ownership assignment
+
+	diff staging:
+		- handle the case when an object needs to be updated
+		- add group removal code
+
+	commands:
+		- add better messaging / options to the status command
+		- add ability to print history to terminal
+		- add ability to print outstanding commits to terminal
+		- finish implementing the "up" command
+
+	object store:
+		- store only hashed values of the rendered files. there is no need to store the contents
 
 
--- REDSCOPE
-add user ownership grouping to DbCatalog object

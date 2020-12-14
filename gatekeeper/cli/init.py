@@ -12,12 +12,12 @@ from gatekeeper.project.file_manager import (
 
 def init(cmd: Namespace) -> None:
     """
-    Create all necessary project paths and files to make the gatekeeper work
-    Args:
-        cmd: Must be taken by an entrypoint
 
-    Returns: None
+    Initializes gatekeeper project directories and config files. This command must be run at least once to start a
+    gatekeeper project, but can be run again at any time to rebuild the project directories. Running this command
+    is *NOT* destructive to the existing project.
 
+    ####*Command:* ``gatekeeper init``
     """
 
     GATEKEEPER_CONFIG_PATH.touch(exist_ok=True)

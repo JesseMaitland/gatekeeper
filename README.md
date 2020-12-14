@@ -19,4 +19,7 @@ gatekeeper <command> -h
 ### Workflow
 Gatekeeper manages 3 main concepts
 
-Gatekeeper uses `yml` files to configure 
+Gatekeeper uses `yml` files to configure `Users`, `Roles` and `Groups`.
+
+###
+

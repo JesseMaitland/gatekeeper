@@ -1,5 +1,3 @@
-
-
 workflow
 	render -> generates the sql files from configs
 	stage  -> compares files to what is in the object db

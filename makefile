@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export REQ_FILE = requirements.txt
-export PROJECT_DIR = monkeywrench
+export PROJECT_DIR = gatekeeper
 export TEST_DIR = tests
 
 
@@ -45,7 +45,7 @@ lint:
 
 test:
 	. venv/bin/activate \
-	&& python -m pytest ${TEST_DIR} -p no:warnings -s
+	&& python -m unittest discover -v tests/gatekeeper
 
 qa:
 	make test

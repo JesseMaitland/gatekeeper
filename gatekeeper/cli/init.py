@@ -17,7 +17,8 @@ def init(cmd: Namespace) -> None:
     gatekeeper project, but can be run again at any time to rebuild the project directories. Running this command
     is *NOT* destructive to the existing project.
 
-    ####*Command:* ``gatekeeper init``
+    Command:
+        ``gatekeeper init``
     """
 
     GATEKEEPER_CONFIG_PATH.touch(exist_ok=True)

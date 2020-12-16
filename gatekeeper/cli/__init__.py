@@ -12,7 +12,7 @@ from .commit import commit
 from .status import status
 from .rewind import rewind
 from .up import up
-
+from .purge import purge
 
 def parse_args():
     parser = ArgumentParser()
@@ -40,9 +40,10 @@ def parse_args():
     staging_parser.set_defaults(func=[render, stage])
 
     commit_parser = sub_parsers.add_parser('commit')
-    commit_parser.set_defaults(func=[digest, commit])
+    commit_parser.set_defaults(func=[render, digest, commit])
 
     up_parser = sub_parsers.add_parser('up')
+    up_parser.add_argument('--print', '-p', action='store_true')
     up_parser.set_defaults(func=up)
 
     status_parser = sub_parsers.add_parser('status')
@@ -58,5 +59,8 @@ def parse_args():
     audit_parser = sub_parsers.add_parser('audit')
     audit_parser.add_argument('kind', choices=['users', 'groups'])
     audit_parser.set_defaults(func=audit)
+
+    purge_parser = sub_parsers.add_parser('purge')
+    purge_parser.set_defaults(func=[purge, render, digest])
 
     return parser.parse_args()

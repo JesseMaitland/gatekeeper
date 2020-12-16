@@ -13,7 +13,6 @@
 		- add better messaging / options to the status command
 		- add ability to print history to terminal
 		- add ability to print outstanding commits to terminal
-		- finish implementing the "up" command
 
 	object store:
 		- store only hashed values of the rendered files. there is no need to store the contents
@@ -21,3 +20,10 @@
 
 	project structure:
 		- re-factor project/file_manager.py. this could be broken up / better organized
+
+	commits:
+		- add timestamp to commit object
+		- create commit class
+
+	bugs:
+		- rendering bug. must rewind object store.

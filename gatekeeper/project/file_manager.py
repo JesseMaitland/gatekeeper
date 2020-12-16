@@ -37,7 +37,8 @@ OBJECT_STORE_PATHS = {
 PROJECT_DIRECTORY_PATHS = {
     'configs': PROJECT_ROOT / 'configs',
     'rendered': PROJECT_ROOT / 'rendered',
-    'commits': PROJECT_ROOT / 'commits'
+    'commits': PROJECT_ROOT / 'commits',
+    'history': PROJECT_ROOT / 'history'
 }
 
 # mapping of all the yaml config files used by gatekeeper to render sql templates
@@ -179,12 +180,34 @@ def get_project_path(name: str) -> Path:
     return PROJECT_DIRECTORY_PATHS[name]
 
 
-def read_index() -> List['str']:
+def read_index() -> List[str]:
     return INDEX_FILE_PATH.read_text().split()
 
 
+def reset_index() -> None:
+    INDEX_FILE_PATH.unlink()
+    INDEX_FILE_PATH.touch()
+
+
+def reset_head() -> None:
+    HEAD_FILE_PATH.unlink()
+    HEAD_FILE_PATH.touch()
+
+
+def clear_staged() -> None:
+    STAGING_FILE_PATH.unlink()
+    STAGING_FILE_PATH.touch()
+
+
 def move_commit_to_executed(file_hash: str) -> None:
-    pass
+    commit = fetch_commit(file_hash)
+    content = commit.read_text()
+    commit.unlink()
+
+    commit = PROJECT_DIRECTORY_PATHS['history'] / commit.name
+    commit.touch()
+    commit.write_text(content)
+
 
 #  TODO: refactor these into their own module
 #########################################################

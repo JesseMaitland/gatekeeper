@@ -12,8 +12,8 @@ ALTER GROUP {{group.name}} DROP USER {{users}};
 {% for schema in schemas %}
 -- remove access for {{schema.name}} / {{users}}
 REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA {{schema.name}} FROM {{users}};
-REVOKE ALL PRIVILEGES ON ALL ROUTINES IN SCHEMA {{schema.name}} FROM {{users}};
-
+REVOKE ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA {{schema.name}} FROM {{users}};
+REVOKE ALL PRIVILEGES ON ALL PROCEDURES IN SCHEMA {{schema.name}} FROM {{users}};
 {%endfor%}
 
 DROP USER {{users}};

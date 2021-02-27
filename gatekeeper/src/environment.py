@@ -1,11 +1,12 @@
 import os
 import psycopg2
+from typing import Callable
 from psycopg2.extensions import connection
 from configparser import ConfigParser
 from dotenv import load_dotenv
 from jinja2 import PackageLoader, Environment
 
-from gatekeeper.project.file_manager import GATEKEEPER_CONFIG_PATH
+from gatekeeper.src.paths import GATEKEEPER_CONFIG_PATH
 
 
 def get_jinja_environment() -> Environment:
@@ -35,13 +36,9 @@ def get_redshift_connection() -> connection:
     return psycopg2.connect(connection_string)
 
 
-def gatekeeper_env(provide_config: bool = False):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            load_gatekeeper_env()
-            if provide_config:
-                return func(config=get_gatekeeper_config(), *args, **kwargs)
-            else:
-                return func(*args, **kwargs)
-        return wrapper
-    return decorator
+def gatekeeper_env(func: Callable):
+    def wrapper(*args, **kwargs):
+        load_gatekeeper_env()
+        return func(*args, **kwargs)
+    return wrapper
+

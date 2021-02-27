@@ -1,17 +1,21 @@
-users:
-  jesse:
-    is_admin: false
-    roles:
-      - foo
-      - bar
+--- !Group
+name: ad_hoc_reader
+kind: full_access
+creator: true
+database: snowplow
+resources:
+  - !Resource
+    name: foo
+    schema: bar
+    tables: [eggs, beans, spam, banana]
+    views: [all]
+    functions: [all]
+    procedures: [all]
 
-  conan:
-    is_admin: false
-    roles:
-      - foo
-
-  terry:
-    is_admin: false
-    roles:
-      - foo
-      - bar
+  - !Resource
+    name: spam
+    schema: eggs
+    tables: [all]
+    views: [all]
+    functions: [all]
+    procedures: [all]

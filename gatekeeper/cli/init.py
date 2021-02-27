@@ -1,12 +1,12 @@
 from argparse import Namespace
-from gatekeeper.project.file_manager import (
+from gatekeeper.src.paths import (
+    PROJECT_ROOT,
     GATEKEEPER_CONFIG_PATH,
-    PROJECT_DIRECTORY_PATHS,
-    PROJECT_CONFIG_FILE_PATHS,
-    OBJECT_STORE_PATHS,
-    HEAD_FILE_PATH,
-    INDEX_FILE_PATH,
-    STAGING_FILE_PATH
+    CONFIGS_DIR,
+    COMMIT_DIR,
+    CONFIG_FILE_NAMES,
+    RENDERED_DIR_NAMES,
+    RENDERED_DIR
 )
 
 
@@ -20,19 +20,13 @@ def init(cmd: Namespace) -> None:
     Command:
         ``gatekeeper init``
     """
+    for directory in [PROJECT_ROOT, RENDERED_DIR, CONFIGS_DIR, COMMIT_DIR]:
+        directory.mkdir(parents=True, exist_ok=True)
 
     GATEKEEPER_CONFIG_PATH.touch(exist_ok=True)
 
-    for dir_path in PROJECT_DIRECTORY_PATHS.values():
-        dir_path.mkdir(exist_ok=True, parents=True)
+    for file in CONFIG_FILE_NAMES:
+        CONFIGS_DIR.joinpath(file).touch(exist_ok=True)
 
-    for dir_path in OBJECT_STORE_PATHS.values():
-        dir_path.mkdir(exist_ok=True, parents=True)
-
-    for config_file in PROJECT_CONFIG_FILE_PATHS.values():
-        config_file.parent.mkdir(exist_ok=True, parents=True)
-        config_file.touch(exist_ok=True)
-
-    STAGING_FILE_PATH.touch(exist_ok=True)
-    HEAD_FILE_PATH.touch(exist_ok=True)
-    INDEX_FILE_PATH.touch(exist_ok=True)
+    for directory in RENDERED_DIR_NAMES:
+        RENDERED_DIR.joinpath(directory).mkdir(exist_ok=True)

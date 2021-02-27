@@ -5,21 +5,33 @@
 
 CREATE GROUP {{group.name}};
 
+{% if group.creator %}
+-- this group is able to create schemas and other objects at the data base level
+GRANT CREATE ON DATABASE {{group.database}} TO GROUP {{group.name}};
+{%endif%}
+
+
+{% if group.super_group %}
+{% for schema in schemas %}
 -- granting usage access to group {{group.name}}
-GRANT USAGE ON SCHEMA {{group.schema}} TO GROUP {{group.name}};
+GRANT USAGE ON SCHEMA {{schema.name}} TO GROUP {{group.name}};
+
+-- grant all privileges on schema {{schema.name}} to group {{group.name}}
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA {{schema.name}} TO GROUP {{group.name}};
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA {{schema.name}} TO GROUP {{group.name}};
+GRANT ALL PRIVILEGES ON ALL PROCEDURES IN SCHEMA {{schema.name}} TO GROUP {{group.name}};
 
 
--- granting object access
-{%if group.kind == 'full'%}
-GRANT ALL PRIVILEGES ON ALL {{group.access.upper()}} IN SCHEMA {{group.schema}} TO GROUP {{group.name}};
-{%endif%}
-{%if group.kind == 'limited_read' and group.access in ['tables', 'views']%}
-{% for name in group.names %}
-GRANT SELECT ON {{group.schema}}.{{name}} TO GROUP {{group.name}};
-{%endfor%}
-{%endif%}
-{%if group.kind == 'limited_write' and group.access in ['tables', 'views']%}
-{% for name in group.names %}
-GRANT SELECT, INSERT, UPDATE, DELETE ON {{group.schema}}.{{name}} TO GROUP {{group.name}};
-{%endfor%}
-{%endif%}
+{% endfor %}
+
+{% else %}
+    {% for resource in group.resources %}
+-- assign usage on schema {{resource.schema}} to group {{group.name}}
+GRANT USAGE ON SCHEMA {{resource.schema}} TO GROUP {{group.name}};
+
+-- assign table access in schema {{resource.schema}} to group {{group.name}}
+        {%for table_access in resource.table_access()%}
+GRANT {{group.access()}} {{table_access}} TO GROUP {{group.name}};
+        {% endfor %}
+    {% endfor %}
+{% endif %}

@@ -1,6 +1,6 @@
 from unittest import TestCase
 from typing import NamedTuple
-from gatekeeper.project.helpers import (
+from gatekeeper.src.helpers import (
     format_template_name,
     format_model_name,
     format_render_key,

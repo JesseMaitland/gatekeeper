@@ -1,5 +1,5 @@
 from argparse import Namespace
-from gatekeeper.project.config_parsing import create_gatekeeper
+from gatekeeper.src.configparsing import create_gatekeeper
 
 
 def cat(cmd: Namespace) -> None:

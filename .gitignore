@@ -216,5 +216,6 @@ fabric.properties
 
 gate-keeper
 .gatekeeper
-redshift_old
 redshift
+redshift_old
+redshift-old

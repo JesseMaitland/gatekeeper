@@ -1,0 +1,53 @@
+--- !User
+name: migration_runner
+create_db: false
+create_user: false
+sys_log_access: restricted or unrestricted
+valid_until: optional
+connection_limit: unlimited
+
+
+--- !User
+name: jesse
+superuser: false
+
+
+# --- !Group
+# name: group_a
+# on_database:
+#   snowplow:
+#     has_permission_to:
+#       - create
+#       - use
+# is_globally_allowed_to: # optional
+#   - read_all_tables
+#   - write_all_tables
+#   - execute_all_functions
+#   - execute_all_procedures
+# on_schema:  # optional
+#   cds:
+#     has_permission_to:
+#       - use
+#       - create
+#       - read_all_tables
+#       - write_all_tables
+#       - execute_all_functions
+#       - execute_all_procedures
+#       - do_everything
+#   on_table: # optional
+#     bds.fact_marketing_costs:
+#       on_columns: all   # optional
+#       has_permission_to:
+#         - select
+#         - insert
+#         - update
+#         - delete
+#         - all
+#   filter_objects_with_prefix: # optional
+#     - pii_
+#   filter_objets_with_postfix: # optional
+#       - _pii
+#       - _foo
+# users:
+#   - migration_runner
+#   - jesse

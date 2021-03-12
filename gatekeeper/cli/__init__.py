@@ -1,10 +1,10 @@
 from argparse import ArgumentParser
 
 from .init import init
-from .render import render
-from .query import query
+from .plan import plan, users, groups
+# from .query import query
 # from .cat import cat
-from .audit import audit
+# from .audit import audit
 # from .rewind import rewind
 
 
@@ -19,15 +19,28 @@ def parse_args():
     init_parser = sub_parsers.add_parser('init')
     init_parser.set_defaults(func=init)
 
-    render_parser = sub_parsers.add_parser('render')
-    render_parser.set_defaults(func=render)
+    plan_parser = sub_parsers.add_parser('plan')
+    plan_parser.set_defaults(func=plan)
 
-    query_parser = sub_parsers.add_parser('query')
-    query_parser.add_argument('query')
-    query_parser.set_defaults(func=query)
-#
-    audit_parser = sub_parsers.add_parser('audit')
-    audit_parser.add_argument('kind', choices=['users', 'groups'])
-    audit_parser.set_defaults(func=audit)
+    plan_sub_parser = plan_parser.add_subparsers(dest='sub_command')
+    user_plan_parser = plan_sub_parser.add_parser('users')
+    user_plan_parser.add_argument('--rotate-passwords', action='store_true', default=False)
+    user_plan_parser.set_defaults(func=users)
+
+    group_plan_parser = plan_sub_parser.add_parser('groups')
+    group_plan_parser.set_defaults(func=groups)
+
+    users_parser = sub_parsers.add_parser('users')
+    users_parser.add_argument('--new', '-n', action='store_true', default=False)
+    users_parser.add_argument('--update')
+    users_parser.set_defaults(func=users)
+
+    # query_parser = sub_parsers.add_parser('query')
+    # query_parser.add_argument('query')
+    # query_parser.set_defaults(func=query)
+
+    # audit_parser = sub_parsers.add_parser('audit')
+    # audit_parser.add_argument('kind', choices=['users', 'groups'])
+    # audit_parser.set_defaults(func=audit)
 
     return parser.parse_args()

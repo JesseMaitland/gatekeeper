@@ -7,10 +7,21 @@ GATEKEEPER_CONFIG_PATH = Path.cwd().absolute() / '.gatekeeper'
 PROJECT_ROOT = Path.cwd().absolute() / "redshift" / "gatekeeper"
 
 # mapping of project directories to be referenced by name
-CONFIGS_DIR = PROJECT_ROOT / 'configs'
-RENDERED_DIR = PROJECT_ROOT / 'rendered'
-COMMIT_DIR = PROJECT_ROOT / 'commits'
+CONFIG_DIR = PROJECT_ROOT / 'config'
+CONFIG_FILE = CONFIG_DIR / 'permissions.yml'
 
-CONFIG_FILE_NAMES = ['users.yml', 'groups.yml']
+# directories to store planned sql files
+PLANNED_DIR = PROJECT_ROOT / 'planned'
+INDEX_DIR = PROJECT_ROOT / "index"
+PLANNED_USERS_DIR = PLANNED_DIR / 'users'
+PLANNED_GROUPS_DIR = PLANNED_DIR / 'groups'
 
-RENDERED_DIR_NAMES = ['users', 'groups']
+USER_INDEX_FILE = INDEX_DIR / "users.json"
+GROUP_INDEX_FILE = INDEX_DIR / "groups.json"
+PASSWORD_INDEX_FILE = INDEX_DIR / 'passwords.json'
+
+# permissions template file
+PERMISSIONS_TEMPLATE = Path(__file__).absolute().parent.parent / 'permissions_template.yml'
+
+# secrets path
+GATEKEEPER_SECRETS = PROJECT_ROOT / "gatekeeper_secrets.json"

@@ -16,7 +16,21 @@ class YamlModel(yaml.YAMLObject):
         return cls(**values)
 
 
-class User(YamlModel):
+class GateKeeperConfig(YamlModel):
+    yaml_tag = '!GateKeeperConfig'
+
+    def __init__(self, env: str, redshift_connection: str, ssm_path: str) -> None:
+        super(GateKeeperConfig, self).__init__()
+        self.env = env
+        self.redshift_connection = redshift_connection
+        self.ssm_path = ssm_path
+
+    @property
+    def fernet_key_ssm(self) -> str:
+        return f"{self.ssm_path}/SECRET_KEY"
+
+
+class UserConfig(YamlModel):
     yaml_tag = '!User'
 
     def __init__(self,
@@ -64,18 +78,24 @@ class User(YamlModel):
 
 
 def register_constructors() -> None:
-    yaml.SafeLoader.add_constructor('!User', User.from_yaml)
+    yaml.SafeLoader.add_constructor('!User', UserConfig.from_yaml)
+    yaml.SafeLoader.add_constructor('!GateKeeperConfig', GateKeeperConfig.from_yaml)
 
 
-def parse_config(path: Path) -> Union[List[User]]:
+def parse_config(path: Path) -> Union[List[UserConfig], GateKeeperConfig]:
     register_constructors()
-    return list(yaml.safe_load_all(path.open()))
+    configs = list(yaml.safe_load_all(path.open()))
+
+    if len(configs) > 1:
+        return configs
+    else:
+        return configs[0]
 
 
 class GateKeeper:
 
-    def __init__(self, entries: List[User]) -> None:
-        self.users = {u.name: u for u in entries if isinstance(u, User)}
+    def __init__(self, entries: List[UserConfig]) -> None:
+        self.users = {u.name: u for u in entries if isinstance(u, UserConfig)}
 
     @classmethod
     def from_configs(cls, path: Path) -> 'GateKeeper':

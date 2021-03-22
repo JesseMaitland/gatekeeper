@@ -1,0 +1,19 @@
+
+
+keys:
+	new:
+		fetch_key:
+
+			if key exists:
+				show message and exit
+
+			otherwise
+				got to make_key:
+
+		make_key:
+			generate key
+			go to save to ssm
+
+		save_ssm:
+			push param
+

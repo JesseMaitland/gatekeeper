@@ -6,9 +6,9 @@ def main():
 
     if type(cmd.func) == list:
         for f in cmd.func:
-            f(cmd)
+            f()(cmd)
     else:
-        cmd.func(cmd)
+        cmd.func()(cmd)
 
 
 if __name__ == '__main__':

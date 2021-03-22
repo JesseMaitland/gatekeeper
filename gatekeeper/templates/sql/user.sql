@@ -5,7 +5,7 @@
 **************************************************************************/
 
 -- create user
-CREATE USER {{user.name}} WITH PASSWORD '{{pw_hash}}'
+CREATE USER {{user.name}} WITH PASSWORD '{xxx-placeholder-xxx}'
 {%if user.create_db%}CREATEDB{%else%}NOCREATEDB{%endif%}
 
 {%if user.create_user%}CREATEUSER{%else%}NOCREATEUSER{%endif%}

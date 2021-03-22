@@ -1,0 +1,4 @@
+--- !GateKeeperConfig
+env: .env
+redshift_connection: REDSHIFT_URL
+ssm_path: /gatekeeper/

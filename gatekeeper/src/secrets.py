@@ -26,5 +26,20 @@ def decrypt_password(encrypted_password: str, fernet: Fernet) -> str:
     return fernet.decrypt(encrypted_password.encode()).decode()
 
 
-def get_fernet(secrets_path: Path) -> Fernet:
-    return Fernet(json.load(secrets_path.open(mode='r'))['key'])
+def get_fernet_from_ssm(ssm_name: str, ssm) -> Fernet:
+    response = ssm.get_parameter(Name=ssm_name, WithDecryption=True)
+    return Fernet(response['Parameter']['Value'])
+
+
+def put_ssm_parameter(ssm_name: str, value: str, ssm) -> None:
+    payload = {
+        'Name': ssm_name,
+        'Description': 'Gatekeeper secret key',
+        'Value': value,
+        'Type': 'SecureString',
+        'Overwrite': True,
+        'DataType': 'text'
+    }
+
+    _ = ssm.put_parameter(**payload)
+    return None
